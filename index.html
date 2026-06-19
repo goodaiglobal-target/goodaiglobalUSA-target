@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>goodaiglobal-target — weekly sales</title>
+<title>goodai global USA - TARGET — weekly sales</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -16,6 +16,7 @@
     --line: #e4e4e4;
     --line-strong: #0a0a0a;
     --hover: #f6f6f6;
+    --red: #e0182d;
     --radius: 4px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -46,8 +47,8 @@
     font-weight: 800;
     font-size: 1.05rem;
     letter-spacing: -0.02em;
-    text-transform: uppercase;
   }
+  .logo .target { color: var(--red); }
   .internal-tag {
     font-size: 0.66rem;
     letter-spacing: 0.16em;
@@ -172,7 +173,7 @@
 <body>
   <div class="wrap">
     <div class="topbar">
-      <div class="logo">goodaiglobal-target</div>
+      <div class="logo">goodai global USA - <span class="target">TARGET</span></div>
       <div class="internal-tag">Internal</div>
     </div>
 
@@ -187,7 +188,7 @@
     <ul class="reports" id="reportList"></ul>
 
     <footer>
-      goodaiglobal-target · Internal use only
+      goodai global USA · Internal use only
     </footer>
   </div>
 
@@ -201,14 +202,14 @@
 <!-- ============================================================= -->
 <script>
   const reports = [
-    { file: "jun-wk2.html", title: "June — Week 2" },
+    { file: "jun-wk2.html", title: "June - Week 2" },
     // 다음 주에 새 리포트를 올리면, 바로 윗줄 위에 이렇게 추가하세요:
-    // { file: "jul-wk1.html", title: "July — Week 1" },
+    // { file: "jul-wk1.html", title: "July - Week 1" },
   ];
 
   // 아래는 건드릴 필요 없습니다 (카드 자동 생성)
   (function () {
-    const meta = "All brands \u00b7 weekly sales";
+    const meta = "";
     const listEl = document.getElementById("reportList");
 
     if (!reports.length) {
@@ -235,7 +236,7 @@
             '<span class="marker">' + escapeHtml(weekMarker(r.title)) + '</span>' +
             '<span class="report-body">' +
               '<span class="report-title">' + escapeHtml(r.title) + '</span>' +
-              '<span class="report-meta">' + meta + '</span>' +
+              (meta ? '<span class="report-meta">' + meta + '</span>' : '') +
             '</span>' +
             badge +
             '<span class="chev" aria-hidden="true">\u2192</span>' +
