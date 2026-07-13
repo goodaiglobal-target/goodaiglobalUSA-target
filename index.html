@@ -98,40 +98,101 @@
     height: 1px;
     background: var(--line);
   }
+
+  /* ---- Month groups (accordion) ---- */
+  .months { display: flex; flex-direction: column; gap: 0.9rem; }
+  .month {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .month-head {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    background: var(--card);
+    border: none;
+    cursor: pointer;
+    padding: 1.05rem 1.15rem;
+    text-align: left;
+    font-family: inherit;
+    color: inherit;
+    transition: background 0.15s ease;
+  }
+  .month-head:hover { background: var(--hover); }
+  .month-head:focus-visible { outline: 2px solid var(--ink); outline-offset: -2px; }
+  .month-name {
+    font-family: 'Archivo', sans-serif;
+    font-weight: 700;
+    font-size: 1.15rem;
+    letter-spacing: -0.02em;
+    flex: 1;
+  }
+  .month-count {
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+  .month-latest {
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--paper);
+    background: var(--red);
+    border-radius: 2px;
+    padding: 0.25rem 0.5rem;
+  }
+  .caret {
+    flex: none;
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+    transition: transform 0.2s ease;
+  }
+  .month.open .caret { transform: rotate(180deg); }
+
+  .month-body {
+    display: none;
+    border-top: 1px solid var(--line);
+    padding: 0 1.15rem;
+  }
+  .month.open .month-body { display: block; }
+
   .reports { list-style: none; display: flex; flex-direction: column; gap: 0; }
   .report {
     display: flex;
     align-items: center;
     gap: 1.1rem;
     border-bottom: 1px solid var(--line);
-    padding: 1.25rem 0.25rem;
+    padding: 1.15rem 0.15rem;
     text-decoration: none;
     color: inherit;
     transition: padding-left 0.18s ease, background 0.18s ease;
   }
-  .report:first-child { border-top: 1px solid var(--line); }
+  .report:last-child { border-bottom: none; }
   .report:hover, .report:focus-visible {
     background: var(--hover);
-    padding-left: 1rem;
+    padding-left: 0.75rem;
     outline: none;
   }
   .report:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
   .marker {
     flex: none;
-    width: 48px; height: 48px;
+    width: 44px; height: 44px;
     border-radius: 2px;
     background: var(--ink);
     color: var(--paper);
     display: grid;
     place-items: center;
     font-family: 'Archivo', sans-serif;
-    font-size: 1.05rem;
+    font-size: 1rem;
     font-weight: 700;
     letter-spacing: -0.02em;
   }
   .report-body { flex: 1; min-width: 0; }
   .report-title {
-    font-size: 1.05rem;
+    font-size: 1.02rem;
     font-weight: 600;
     letter-spacing: -0.01em;
   }
@@ -180,12 +241,12 @@
     <header>
       <div class="eyebrow">Sales Reporting</div>
       <h1>Weekly Sales</h1>
-      <p class="lede">Internal weekly sales reports across all brands. Select a week to view the full breakdown.</p>
+      <p class="lede">Internal weekly sales reports across all brands. Pick a month, then select a week to view the full breakdown.</p>
     </header>
 
     <div class="section-label">Reports</div>
 
-    <ul class="reports" id="reportList"></ul>
+    <div class="months" id="monthList"></div>
 
     <footer>
       goodai global USA · Internal use only
@@ -197,8 +258,8 @@
 <!--  새 리포트를 올리면, 아래 목록 맨 위에 한 줄만 추가하면 됩니다.      -->
 <!--  { file: "파일이름.html", title: "보일 제목" },                  -->
 <!--  - file  = 실제 올린 파일 이름과 똑같이 (대소문자까지)             -->
-<!--  - title = 카드에 크게 보일 제목                                 -->
-<!--  마커(W1 등)와 "Latest" 뱃지는 자동으로 처리됩니다.               -->
+<!--  - title = 카드에 크게 보일 제목 (반드시 월 이름 포함: 예 "July - Week 1") -->
+<!--  월별 그룹 / 마커(W1) / "Latest" 뱃지 / 펼침은 전부 자동입니다.     -->
 <!-- ============================================================= -->
 <script>
   const reports = [
@@ -208,17 +269,23 @@
     { file: "jun-wk3.html", title: "June - Week 3" },
     { file: "jun-wk2.html", title: "June - Week 2" },
     // 다음 주에 새 리포트를 올리면, 바로 윗줄 위에 이렇게 추가하세요:
-    // { file: "jul-wk1.html", title: "July - Week 1" },
+    // { file: "jul-wk2.html", title: "July - Week 2" },
   ];
 
-  // 아래는 건드릴 필요 없습니다 (카드 자동 생성)
+  // ================= 아래는 건드릴 필요 없습니다 =================
   (function () {
-    const meta = "";
-    const listEl = document.getElementById("reportList");
+    const listEl = document.getElementById("monthList");
 
     if (!reports.length) {
-      listEl.innerHTML = '<li class="empty">\uc544\uc9c1 \ub4f1\ub85d\ub41c \ub9ac\ud3ec\ud2b8\uac00 \uc5c6\uc2b5\ub2c8\ub2e4.</li>';
+      listEl.innerHTML = '<div class="empty">\uc544\uc9c1 \ub4f1\ub85d\ub41c \ub9ac\ud3ec\ud2b8\uac00 \uc5c6\uc2b5\ub2c8\ub2e4.</div>';
       return;
+    }
+
+    const MONTHS = ["January","February","March","April","May","June",
+                    "July","August","September","October","November","December"];
+
+    function escapeHtml(s) {
+      return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
     function weekMarker(title) {
@@ -227,27 +294,76 @@
       return title.trim().charAt(0).toUpperCase();
     }
 
-    function escapeHtml(s) {
-      return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    // 제목에서 월 이름을 찾아 월 index(0-11)를 돌려줌. 못 찾으면 -1.
+    function monthIndex(title) {
+      for (let i = 0; i < MONTHS.length; i++) {
+        if (new RegExp(MONTHS[i], "i").test(title)) return i;
+      }
+      return -1;
     }
 
-    listEl.innerHTML = reports.map(function (r, i) {
-      const isLatest = i === 0;
-      const badge = isLatest ? '<span class="badge">Latest</span>' : '';
+    // reports 배열 순서(최신이 위) 그대로 월별로 묶는다.
+    const groups = [];          // [{ month, items:[...] }]
+    const groupByMonth = {};
+    let latestKey = null;       // 전체에서 가장 위(=최신) 리포트가 속한 그룹
+
+    reports.forEach(function (r, i) {
+      const mi = monthIndex(r.title);
+      const key = mi >= 0 ? MONTHS[mi] : "Other";
+      if (!groupByMonth[key]) {
+        const g = { key: key, month: mi >= 0 ? MONTHS[mi] : "Other", items: [] };
+        groupByMonth[key] = g;
+        groups.push(g);
+      }
+      groupByMonth[key].items.push(r);
+      if (i === 0) latestKey = key;   // 배열 첫 항목이 최신
+    });
+
+    listEl.innerHTML = groups.map(function (g) {
+      const isLatestMonth = g.key === latestKey;
+      const openClass = isLatestMonth ? " open" : "";
+      const latestTag = isLatestMonth ? '<span class="month-latest">Latest</span>' : '';
+      const countLabel = g.items.length + (g.items.length === 1 ? " report" : " reports");
+
+      const rows = g.items.map(function (r, idx) {
+        // 최신 그룹의 맨 첫 리포트에만 Latest 뱃지
+        const isLatestReport = isLatestMonth && idx === 0;
+        const badge = isLatestReport ? '<span class="badge">Latest</span>' : '';
+        return (
+          '<li>' +
+            '<a class="report" href="./' + encodeURI(r.file) + '">' +
+              '<span class="marker">' + escapeHtml(weekMarker(r.title)) + '</span>' +
+              '<span class="report-body">' +
+                '<span class="report-title">' + escapeHtml(r.title) + '</span>' +
+              '</span>' +
+              badge +
+              '<span class="chev" aria-hidden="true">\u2192</span>' +
+            '</a>' +
+          '</li>'
+        );
+      }).join("");
+
       return (
-        '<li>' +
-          '<a class="report" href="./' + encodeURI(r.file) + '">' +
-            '<span class="marker">' + escapeHtml(weekMarker(r.title)) + '</span>' +
-            '<span class="report-body">' +
-              '<span class="report-title">' + escapeHtml(r.title) + '</span>' +
-              (meta ? '<span class="report-meta">' + meta + '</span>' : '') +
-            '</span>' +
-            badge +
-            '<span class="chev" aria-hidden="true">\u2192</span>' +
-          '</a>' +
-        '</li>'
+        '<div class="month' + openClass + '">' +
+          '<button class="month-head" type="button" aria-expanded="' + (isLatestMonth ? 'true' : 'false') + '">' +
+            '<span class="month-name">' + escapeHtml(g.month) + '</span>' +
+            '<span class="month-count">' + countLabel + '</span>' +
+            latestTag +
+            '<span class="caret" aria-hidden="true">\u25be</span>' +
+          '</button>' +
+          '<div class="month-body"><ul class="reports">' + rows + '</ul></div>' +
+        '</div>'
       );
     }).join("");
+
+    // 펼치기/접기
+    listEl.querySelectorAll(".month-head").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        const monthEl = btn.closest(".month");
+        const open = monthEl.classList.toggle("open");
+        btn.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+    });
   })();
 </script>
 </body>
